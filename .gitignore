@@ -8,6 +8,8 @@
 .idea/**/usage.statistics.xml
 .idea/**/dictionaries
 .idea/**/shelf
+.idea/
+.vscode/
 
 # Generated files
 .idea/**/contentModel.xml
@@ -252,3 +254,7 @@ dmypy.json
 [Ss]cripts
 pyvenv.cfg
 pip-selfcheck.json
+
+# Evironment Files
+dump.json
+google-credentials.json
