@@ -7,27 +7,9 @@ stonks = StockMarket(db)
 # TODO: Agregar las categorías a Firebase
 # NOTE: Esta funcion es temporal, y solo cumple el propósito del setup inicial
 
-categories = ("tech",           # 0
-              "mobile",         # 1
-              "computer",       # 2
-              "hardware",       # 3
-              "software",       # 4
-              "automotive",     # 5
-              "mechanical",     # 6
-              "pharma",         # 7
-              "entertainment",  # 8
-              "business",       # 9
-              "gaming",         # 10
-              "shopping",       # 11
-              "finance",        # 12
-              "social",         # 13
-              "electric",       # 14
-              "enterprise",     # 15
-              "cosmetics",      # 16
-              "food",           # 17
-              "industry",       # 18
-              "telecom",        # 19
-            )
+categories = (
+    ""
+)
 with open("dump.json") as file:
     dump = json.load(file)
     for symbol, info in dump.items():
