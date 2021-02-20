@@ -1,5 +1,6 @@
-from DB_Control import db
+import DB_Control
 from StockMarket.market import StockMarket
 
-stonks = StockMarket(db) 
+db = DB_Control.initialise_database()
+stonks = StockMarket(db)
     
