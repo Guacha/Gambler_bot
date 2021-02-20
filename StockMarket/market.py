@@ -1,4 +1,5 @@
 from datetime import datetime
+from google.cloud.firestore_v1.query import Query
 
 class StockMarket:
 
@@ -85,13 +86,15 @@ class StockMarket:
         Returns:
             bool: Boleano que determina si la escritura fue correcta
         """
-        try:
-            curr = self.stock_refs[symbol].get().to_dict()["per_stock_price"]
-            self.__db.collection("config").document("bot_config").collection("stonks")\
-                .document(symbol).collection("price_history").add({
-                    "timestamp": datetime.now(),
-                    "price": curr
-                })
-            return True
-        except KeyError:
-            return False
+        curr = self.stock_refs[symbol].get().to_dict()["per_stock_price"]
+        self.__db.collection("config").document("bot_config").collection("stonks")\
+            .document(symbol).collection("price_history").add({
+                "timestamp": datetime.now(),
+                "price": curr
+            })
+        return True
+
+    def get_price_history(self, symbol: str, mins: int=360):
+        q = self.stock_refs[symbol].collection("price_history").order_by('timestamp', direction=Query.DESCENDING).limit(mins)
+        return q.stream()
+        
