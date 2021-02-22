@@ -8,7 +8,6 @@ class StockMarket:
         self.__db = db
         self.__load_stock_refs()
         print("\tMódulo cargado con éxito")
-    
         
     def setup_stock(self, symbol: str, data: dict):
         """Agregar o renovar la información de una acción a partir de un payload
@@ -77,7 +76,7 @@ class StockMarket:
         except KeyError:
             return False
 
-    def current_price_to_history(self, symbol: str) -> bool:
+    def price_to_history(self, symbol: str, price: float, change: float) -> bool:
         """Agregar valor actual de acción al histórico de precios
 
         Args:
@@ -86,15 +85,18 @@ class StockMarket:
         Returns:
             bool: Boleano que determina si la escritura fue correcta
         """
-        curr = self.stock_refs[symbol].get().to_dict()["per_stock_price"]
-        self.__db.collection("config").document("bot_config").collection("stonks")\
-            .document(symbol).collection("price_history").add({
+        self.stock_refs[symbol].collection("price_history").add({
                 "timestamp": datetime.now(),
-                "price": curr
+                "price": price,
+                "change": change,
             })
         return True
 
     def get_price_history(self, symbol: str, mins: int=360):
         q = self.stock_refs[symbol].collection("price_history").order_by('timestamp', direction=Query.DESCENDING).limit(mins)
-        return q.stream()
+        a =  list(q.stream())
+        a.reverse()
+        return a
+    
+    def calculate_price_change(self, symbol: str) -> Tuple[float, float]:
         
