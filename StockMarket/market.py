@@ -1,5 +1,7 @@
 from datetime import datetime
 from google.cloud.firestore_v1.query import Query
+import random
+from typing import Tuple
 
 class StockMarket:
 
@@ -99,4 +101,37 @@ class StockMarket:
         return a
     
     def calculate_price_change(self, symbol: str) -> Tuple[float, float]:
+        """Funcion que calcula aleatoriamente el cambio porcentual de la acción dada
+
+        Args:
+            symbol (str): El símbolo de la acción dada
+
+        Returns:
+            Tuple[float, float]: Tupla que contiene el nuevo precio y el porcentaje de cambio de la acción
+        """
+        
+        stock = self.stock_refs[symbol].get().to_dict()
+        decay_prob = random.random()
+        
+        # Algoritmo muy primitivo para calcular si la acción sube o baja de precio
+        # TODO: Implementar algoritmo basado en precios anteriores
+        decay_prob = decay_prob + (stock['current_stock_amount']/stock['total_stock_amount'])*0.2
+        if decay_prob > 0.5:
+            sign = -1
+        else:
+            sign = 1
+            
+        # Algoritmo muy primitivo para calcular magnitud del cambio de precios
+        # TODO: Implementar algoritmo basado en otras cosas (?)
+        magnitude_chance = random.uniform(0,1)
+        
+        if magnitude_chance >= 0.99:
+            change_magnitude = random.uniform(0.1,0.5)
+        elif magnitude_chance >= 0.89:
+            change_magnitude = random.uniform(0.05,0.1)
+        elif magnitude_chance >= 0.66:
+            pass
+        else:
+            pass
+        
         
