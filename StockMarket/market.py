@@ -94,20 +94,34 @@ class StockMarket:
             })
         return True
 
-    def get_price_history(self, symbol: str, mins: int=360):
+    def get_price_history(self, symbol: str, mins: int=360) -> Tuple[list, float]:
+        """Función que obtiene el histórico de precios de una acción dada para el periodo de tiempo establecido
+
+        Args:
+            symbol (str): La acción a buscar
+            mins (int, optional): El periodo de tiempo en minutos a buscar. Defaults to 360.
+
+        Returns:
+            [List]: [Lista de onjetos histórico, cada uno con timestamp, precio, y cambio del anterior]
+        """        
+        
         q = self.stock_refs[symbol].collection("price_history").order_by('timestamp', direction=Query.DESCENDING).limit(mins)
         a =  list(q.stream())
         a.reverse()
-        return a
+        
+        start = a[0].to_dict()["price"]
+        closing = a[-1].to_dict()["price"]
+        change = closing/start - 1        
+        return a, change
     
-    def calculate_price_change(self, symbol: str) -> Tuple[float, float]:
+    def calculate_price_change(self, symbol: str) -> Tuple[float, float, float]:
         """Funcion que calcula aleatoriamente el cambio porcentual de la acción dada
 
         Args:
             symbol (str): El símbolo de la acción dada
 
         Returns:
-            Tuple[float, float]: Tupla que contiene el nuevo precio y el porcentaje de cambio de la acción
+            Tuple[float, float, float]: Tupla que contiene el precio actual, el nuevo precio y el porcentaje de cambio de la acción
         """
         
         stock = self.stock_refs[symbol].get().to_dict()
@@ -123,15 +137,21 @@ class StockMarket:
             
         # Algoritmo muy primitivo para calcular magnitud del cambio de precios
         # TODO: Implementar algoritmo basado en otras cosas (?)
-        magnitude_chance = random.uniform(0,1)
+        magnitude_chance = random.triangular(0,1,0.33)
         
         if magnitude_chance >= 0.99:
-            change_magnitude = random.uniform(0.1,0.5)
-        elif magnitude_chance >= 0.89:
-            change_magnitude = random.uniform(0.05,0.1)
-        elif magnitude_chance >= 0.66:
-            pass
+            change_magnitude = round(random.uniform(0.1,0.15), 3)
+        elif magnitude_chance >= 0.95:
+            change_magnitude = round(random.uniform(0.05,0.1), 3)
+        elif magnitude_chance >= 0.85:
+            change_magnitude = round(random.uniform(0.01,0.05), 3)
         else:
-            pass
+            change_magnitude = round(random.uniform(0,0.01), 3)
+        
+
+        # Calcular el valor final y retornarlo
+        new = stock["per_stock_price"] + stock["per_stock_price"]*change_magnitude*sign
+        
+        return stock["per_stock_price"], new, change_magnitude*sign
         
         
