@@ -102,7 +102,7 @@ class StockMarket:
             mins (int, optional): El periodo de tiempo en minutos a buscar. Defaults to 360.
 
         Returns:
-            [List]: [Lista de onjetos histórico, cada uno con timestamp, precio, y cambio del anterior]
+            [List]: [Lista de objetos histórico, cada uno con timestamp, precio, y cambio del anterior]
         """        
         
         q = self.stock_refs[symbol].collection("price_history").order_by('timestamp', direction=Query.DESCENDING).limit(mins)
