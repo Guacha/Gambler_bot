@@ -137,21 +137,21 @@ class StockMarket:
             
         # Algoritmo muy primitivo para calcular magnitud del cambio de precios
         # TODO: Implementar algoritmo basado en otras cosas (?)
-        magnitude_chance = random.triangular(0,1,0.33)
+        magnitude_chance = random.triangular(0,1,0.1)
         
         if magnitude_chance >= 0.99:
-            change_magnitude = round(random.uniform(0.1,0.15), 3)
+            change_magnitude = round(random.uniform(0.1,0.2), 3)
         elif magnitude_chance >= 0.95:
             change_magnitude = round(random.uniform(0.05,0.1), 3)
         elif magnitude_chance >= 0.85:
             change_magnitude = round(random.uniform(0.01,0.05), 3)
         else:
-            change_magnitude = round(random.uniform(0,0.01), 3)
+            change_magnitude = round(random.uniform(0.001,0.005), 3)
         
 
         # Calcular el valor final y retornarlo
         new = stock["per_stock_price"] + stock["per_stock_price"]*change_magnitude*sign
         
-        return stock["per_stock_price"], new, change_magnitude*sign
+        return stock["per_stock_price"], round(new, 2), change_magnitude*sign
         
         
