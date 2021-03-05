@@ -78,41 +78,48 @@ class StockMarket:
         except KeyError:
             return False
 
-    def price_to_history(self, symbol: str, price: float, change: float) -> bool:
-        """Agregar valor actual de acción al histórico de precios
+    def price_to_history(self, symbol: str, price: float, change: float, free_stock_percent: float) -> bool:
+        """Función que agrega el precio dado al histórico de precios de una acción dada
 
         Args:
-            symbol (str): La acción pertinente
+            symbol (str): Símbolo de la acción a tratar
+            price (float): El precio a agregar al histórico
+            change (float): El cambio (en porcentaje) que se aplicó al precio anterior
+            free_stock_percent (float): La cantidad de acciones (en porcentaje) que están libres en el mercado
 
         Returns:
-            bool: Boleano que determina si la escritura fue correcta
+            bool: Si la acción de escribir fue exitosa
         """
+        
         self.stock_refs[symbol].collection("price_history").add({
                 "timestamp": datetime.now(),
                 "price": price,
                 "change": change,
+                "free_stocks": free_stock_percent
             })
         return True
 
     def get_price_history(self, symbol: str, mins: int=360) -> Tuple[list, float]:
-        """Función que obtiene el histórico de precios de una acción dada para el periodo de tiempo establecido
+        """Obtiene el histórico de precios de la acción dada en el periodo de tiempo establecido
 
         Args:
-            symbol (str): La acción a buscar
-            mins (int, optional): El periodo de tiempo en minutos a buscar. Defaults to 360.
+            symbol (str): El símbolo de la acción a buscar
+            mins (int, optional): El tiempo en minutos que se desea ir en el pasado. Default = 360.
 
         Returns:
-            [List]: [Lista de objetos histórico, cada uno con timestamp, precio, y cambio del anterior]
-        """        
-        
+            Tuple[list, float]: Una lista de históricos y el cambio total que ocurrió en ese periodo de tiempo
+        """                    
+        stock = self.stock_refs[symbol].get().to_dict()
         q = self.stock_refs[symbol].collection("price_history").order_by('timestamp', direction=Query.DESCENDING).limit(mins)
         a =  list(q.stream())
         a.reverse()
-        
-        start = a[0].to_dict()["price"]
-        closing = a[-1].to_dict()["price"]
-        change = closing/start - 1        
-        return a, change
+        try:
+            start = a[0].to_dict()["price"]
+            closing = stock["per_stock_price"]
+            change = closing/start - 1        
+            return a, change
+        except IndexError:
+            return [], 0
     
     def calculate_price_change(self, symbol: str) -> Tuple[float, float, float]:
         """Funcion que calcula aleatoriamente el cambio porcentual de la acción dada
@@ -125,11 +132,11 @@ class StockMarket:
         """
         
         stock = self.stock_refs[symbol].get().to_dict()
+        history, _ = self.get_price_history(symbol, 1)
         decay_prob = random.random()
         
         # Algoritmo muy primitivo para calcular si la acción sube o baja de precio
         # TODO: Implementar algoritmo basado en precios anteriores
-        decay_prob = decay_prob + (stock['current_stock_amount']/stock['total_stock_amount'])*0.2
         if decay_prob > 0.5:
             sign = -1
         else:
@@ -137,21 +144,61 @@ class StockMarket:
             
         # Algoritmo muy primitivo para calcular magnitud del cambio de precios
         # TODO: Implementar algoritmo basado en otras cosas (?)
-        magnitude_chance = random.triangular(0,1,0.1)
+        magnitude_chance = random.triangular(0,1,0.2)
         
-        if magnitude_chance >= 0.99:
-            change_magnitude = round(random.uniform(0.1,0.2), 3)
-        elif magnitude_chance >= 0.95:
-            change_magnitude = round(random.uniform(0.05,0.1), 3)
-        elif magnitude_chance >= 0.85:
-            change_magnitude = round(random.uniform(0.01,0.05), 3)
+        # Hallar una magnitud de cambion aleatoria
+        if magnitude_chance > 0.99:
+            change_magnitude = random.uniform(0.1,0.2)
+        elif magnitude_chance >= 0.96:
+            change_magnitude = random.uniform(0.05,0.1)
+        elif magnitude_chance >= 0.93:
+            change_magnitude = random.uniform(0.01,0.05)
         else:
-            change_magnitude = round(random.uniform(0.001,0.005), 3)
+            change_magnitude = random.uniform(0.001,0.005)
+
+        # Transformar esa magnitud de cambio según las acciones libres
+        # Obtener el porcentaje de acciones que están disponibles en el mercado de
+        current_free_stocks = stock["current_stock_amount"]/stock["total_stock_amount"]
         
+        # Buscar entre el histórico para ver si el número de acciones libres cambió
+        # NOTE: La razón por la que esto está en un for loop es para evitar situaciones en las que la lista esté vacía
+        free_change = 1
+        for price in history:
+            price = price.to_dict()
+            if price["free_stocks"] == current_free_stocks:
+                free_change = 0.7
+            
+            # Si las acciones libres disminuyeron, el precio debe aumentar mas (o disminuir menos)
+            elif price["free_stocks"] > current_free_stocks:
+                percentage = price["free_stocks"] - current_free_stocks
+                
+                if percentage >= 0.2:
+                    free_change += 0.7*sign
+                elif percentage > 0.1:
+                    free_change += 0.4*sign
+                elif percentage > 0.05:
+                    free_change += 0.2*sign
+                else:
+                    free_change += 0.1*sign
+            
+            # Si las acciones libres aumentaron, el precio debe disminuir mas (o aumentar menos)
+            else:
+                percentage = current_free_stocks - price["free_stocks"]
+                
+                if percentage >= 0.2:
+                    free_change += 0.7*-sign
+                elif percentage > 0.1:
+                    free_change += 0.4*-sign
+                elif percentage > 0.05:
+                    free_change += 0.2*-sign
+                else:
+                    free_change += 0.1*-sign
+            
+            change_magnitude *= free_change
 
         # Calcular el valor final y retornarlo
         new = stock["per_stock_price"] + stock["per_stock_price"]*change_magnitude*sign
         
-        return stock["per_stock_price"], round(new, 2), change_magnitude*sign
+        return stock["per_stock_price"], new, change_magnitude*sign, current_free_stocks
         
         
