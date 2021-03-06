@@ -22,10 +22,9 @@ client = GamBlot("/")
 # Eventos
 @client.event
 async def on_ready():
-    bot_message("Probando", "warning")
-    bot_message("Probando", "error")
-    bot_message("Probando", "message")
-    bot_message("Probando", "important")
+    bot_message("Probando", "warning", "bold", "underline")
+    bot_message("Probando", "message", "header")
+    bot_message("Probando", "error", "bold")
 
 # Comandos
 @client.slash.slash(name="ping",

@@ -8,16 +8,25 @@ ENDC = '\033[0m'
 BOLD = '\033[1m'
 UNDERLINE = '\033[4m'
     
-def module_message(message, module_name, level="message", *modifiers):
-    valid_levels = {"warning": WARNING,
-                    "error": FAIL,
-                    "message": "",
-                    "important": BOLD,
-                    "ok", OKGREEN,
-                    "":}
-    print(f"{valid_levels[level] if level in valid_levels else ''}\
-          [{module_name}][{level.upper()}]{message}{ENDC if level in valid_levels else ''}")
+def module_message(message, module_name, level=None, *modifiers):
+    valid_levels = {
+        "warning": WARNING,
+        "error": FAIL,
+        "message": OKCYAN,
+        "ok": OKGREEN,
+        "":""
+    }
+    valid_mods = {
+        "bold": BOLD,
+        "underline": UNDERLINE,
+        "header": HEADER    
+    }
+    mods = " ".join([valid_mods[mod] for mod in modifiers[0]]) if modifiers else ""
+    level = valid_levels[level] if level else ""
     
-def bot_message(message, level):
-    module_message(message, level, "GamBlot")
+    print(f"{mods}{level}{message}{ENDC}")
+    
+    
+def bot_message(message, level, *modifiers):
+    module_message(message, "GamBlot", level, modifiers)
     
