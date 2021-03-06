@@ -30,7 +30,7 @@ async def ping(ctx):
     await ctx.respond()
     await ctx.send(f"Pong! (Latencia: {client.latency*1000} ms)")
 
-client.run("ODE3NTU3MjAzNzYyMTUxNDM0.YELPeg.1Ovk9h7fKg1yZ1JxJZ2jaJpdpdE")
+client.run("")
 
 
     
