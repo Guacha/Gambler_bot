@@ -3,7 +3,7 @@ import DB_Control
 import discord
 from discord.ext import commands
 from discord_slash import SlashCommand
-from debug import bot_message
+from debug import bot_message, bot_print, bot_warning, bot_error, bot_success
 import os
 
 class GamBlot(commands.Bot):
@@ -22,9 +22,7 @@ client = GamBlot("/")
 # Eventos
 @client.event
 async def on_ready():
-    bot_message("Probando", "warning", "bold", "underline")
-    bot_message("Probando", "message", "header")
-    bot_message("Probando", "error", "bold")
+    bot_print("Inicialización terminada, Bot en línea", "bold", "underline")
 
 # Comandos
 @client.slash.slash(name="ping",
@@ -34,5 +32,10 @@ async def ping(ctx):
     await ctx.respond()
     await ctx.send(f"Pong! (Latencia: {client.latency*1000} ms)")
 
-client.run(os.getenv("DISCORD_BOT_TOKEN"))
+
+# Main loop
+if __name__ == "__main__":
+    
+    
+    client.run(os.getenv("DISCORD_BOT_TOKEN"))
     

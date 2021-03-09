@@ -21,12 +21,41 @@ def module_message(message, module_name, level=None, *modifiers):
         "underline": UNDERLINE,
         "header": HEADER    
     }
-    mods = " ".join([valid_mods[mod] for mod in modifiers[0]]) if modifiers else ""
-    level = valid_levels[level] if level else ""
+    mods = "".join([valid_mods[mod] for mod in modifiers]) if modifiers else ""
+    level_str = valid_levels[level] if level else ""
     
-    print(f"{mods}{level}{message}{ENDC}")
+    print(f"{mods}{level_str}[{module_name}] {level.capitalize() if level else 'Info'}: {message}{ENDC}")
+    
+# Sobrecarga de métodos para el bot, todos funcionan exactamente igual    
+def bot_print(message, *modifiers):
+    module_message(message, "GamBlot", None, *modifiers)
+
+def bot_warning(message, *modifiers):
+    module_message(message, "GamBlot", "warning", *modifiers)
+    
+def bot_success(message, *modifiers):
+    module_message(message, "GamBlot", "ok", *modifiers)
+    
+def bot_error(message, *modifiers):
+    module_message(message, "GamBlot", "error", *modifiers)
+    
+def bot_message(message, *modifiers):
+    module_message(message, "GamBlot", "message", *modifiers)
     
     
-def bot_message(message, level, *modifiers):
-    module_message(message, "GamBlot", level, modifiers)
+# Sobrecarga de métodos para módulos, todos funcionan exactamente igual
+def mod_print(message, name, *modifiers):
+    module_message(message, name, "", *modifiers)
+
+def mod_warning(message, name, *modifiers):
+    module_message(message, name, "warning", *modifiers)
+    
+def mod_success(message, name, *modifiers):
+    module_message(message, name, "ok", *modifiers)
+    
+def mod_error(message, name, *modifiers):
+    module_message(message, name, "error", *modifiers)
+    
+def mod_message(message, name, *modifiers):
+    module_message(message, name, "message", *modifiers)
     
