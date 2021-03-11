@@ -12,14 +12,24 @@ class Stock:
     """
     
     def __init__(self, symbol: str, price: float, doc_ref: DocumentReference):
+        self.__last_update = datetime.now()
         self.symbol = symbol
-        self.stock = yf.ticker(symbol)
+        self.ticker = yf.Ticker(symbol)
         self.price = price
+        self.history = self.get_history(force_update=True)
         self.doc_ref = doc_ref
+        
+    
+    def update_values():
+        data = self.doc_ref.get().to_dict()
+        
     
     def get_price(self) -> float:
-        return self.doc_ref.get().to_dict()['per_stock_price']
-    
+        if (datetime.now() - self.__last_update).min > 1:
+            return self.doc_ref.get().to_dict()['per_stock_price']
+        else:
+            return this
+        
     def set_price(self, newprice):
         """Función que establece el precio de la acción en la BD
 
@@ -70,7 +80,7 @@ class Stock:
         new_price = self.calculate_price_change(curr_price)
         self.set_price(new_price)
     
-    def get_history(self, mins: int=360):
+    def get_history(self, start_date=dt.datetime.combine(dt.date.today(), dt.datetime.min.time()), end_date):
         """Obtiene el histórico de precios de la acción dada en el periodo de tiempo establecido
 
         Args:
@@ -90,9 +100,13 @@ class Stock:
         except IndexError:
             return [], 0
     
+    class StockMarket(commands.Cog):
     
-class StockMarket(commands.Cog):
-    
-    def __init__(self, db):
-        self.__db = db
-        
+        def __init__(self, db):
+            self.__db = db
+            self.stocks = {}
+            docs = self.__db.collection("config").document("bot_config").collection("stonks").get()
+            for doc in docs:
+                data = doc.to_dict()
+                stonk = Stock(doc.id, data["per_stock_price"], doc.reference)
+                self.stocks[doc.id] = stonk
